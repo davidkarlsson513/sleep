@@ -23,16 +23,14 @@ import kotlin.coroutines.suspendCoroutine
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val retrofit = Retrofit.Builder().baseUrl("https://newsapi.org/v2/")
-        .addConverterFactory(GsonConverterFactory.create()).build()
+    private val articleRepository = ArticleRepository(application)
 
     private val articles = MutableLiveData<List<Article>>(emptyList())
     fun getArticles(): LiveData<List<Article>> = articles
 
     init {
         viewModelScope.launch {
-            // Observe the articles in the database
-            getApplication<App>().articleDao.getAll().collect {
+            articleRepository.getArticles().collect {
                 articles.value = it
             }
         }
@@ -41,56 +39,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun addNewArticles(keyword: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val articles = getNewsApiArticles(keyword)
-                articles?.let { addToDatabase(articles) }
+                articleRepository.addNewArticles(keyword)
             }
         }
-    }
-
-    private suspend fun getNewsApiArticles(keyword: String): List<NewsApiArticle>? {
-        // Fetch the articles in a loop since a limited number of articles can be retrieved
-        // in a single request
-
-        val pageSize = 100
-        var page = 1
-
-        val allArticles = mutableListOf<NewsApiArticle>()
-
-        var done = false
-        while (!done) {
-            // Suspend the coroutine until Retrofit returns with the results
-            val newsApiResponse = suspendCoroutine<NewsApiResponse?> { continuation ->
-                retrofit.create(NewsApiEndpoint::class.java).fetch(keyword, page, pageSize)
-                    .enqueue(object : Callback<NewsApiResponse> {
-                        override fun onResponse(call: Call<NewsApiResponse>, response: Response<NewsApiResponse>) {
-                            continuation.resume(response.body())
-                        }
-
-                        override fun onFailure(call: Call<NewsApiResponse>, t: Throwable) {
-                            continuation.resume(null)
-                        }
-                    })
-            }
-
-            if (newsApiResponse == null) {
-                Log.w("sleep", "Failed to retrieve articles from NewsApi")
-                return null
-            }
-
-            allArticles.addAll(newsApiResponse.articles)
-            if (allArticles.size == newsApiResponse.totalResults) {
-                done = true
-            }
-
-            page ++
-        }
-
-        return allArticles
-    }
-
-    private fun addToDatabase(articles: List<NewsApiArticle>) {
-        val dao = getApplication<App>().articleDao
-        val dbArticles = articles.map { Article(it.url, it.publishedAt.time, it.title, it.urlToImage, it.content) }
-        dao.insert(dbArticles)
     }
 }
