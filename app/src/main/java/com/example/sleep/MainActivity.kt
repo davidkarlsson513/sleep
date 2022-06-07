@@ -24,10 +24,14 @@ class MainActivity : AppCompatActivity(), CustomAdapter.Callback {
 
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
 
+        // Add listener to configure the layout manager with the number of columns when the size
+        // of the grid changes
         recyclerView.viewTreeObserver.addOnGlobalLayoutListener {
             val itemSize = resources.getDimension(R.dimen.article_item_size).toInt()
             val width = recyclerView.measuredWidth
             val count = max(width / itemSize, 1)
+
+            // Prevent an infinite loop by only updating the layout manager if needed
             if (gridLayoutManager.spanCount != count) {
                 gridLayoutManager = GridLayoutManager(this, count)
                 recyclerView.layoutManager = gridLayoutManager
@@ -46,11 +50,13 @@ class MainActivity : AppCompatActivity(), CustomAdapter.Callback {
     override fun onResume() {
         super.onResume()
 
+        // Fetch new articles
         val terms = listOf("Apple", "Google", "Meta")
         terms.forEach { model.addNewArticles(it) }
     }
 
     override fun onOpenArticle(article: Article) {
+        // Launch article activity
         val intent = Intent(this, ArticleActivity::class.java).apply {
             putExtra(ArticleActivity.EXTRA_MESSAGE, article)
         }

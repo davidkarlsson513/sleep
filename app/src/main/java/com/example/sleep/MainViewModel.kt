@@ -31,6 +31,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch {
+            // Observe the articles in the database
             getApplication<App>().articleDao.getAll().collect {
                 articles.value = it
             }
@@ -47,6 +48,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun getNewsApiArticles(keyword: String): List<NewsApiArticle>? {
+        // Fetch the articles in a loop since a limited number of articles can be retrieved
+        // in a single request
+
         val pageSize = 100
         var page = 1
 
@@ -54,13 +58,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         var done = false
         while (!done) {
+            // Suspend the coroutine until Retrofit returns with the results
             val newsApiResponse = suspendCoroutine<NewsApiResponse?> { continuation ->
                 retrofit.create(NewsApiEndpoint::class.java).fetch(keyword, page, pageSize)
                     .enqueue(object : Callback<NewsApiResponse> {
-                        override fun onResponse(
-                            call: Call<NewsApiResponse>,
-                            response: Response<NewsApiResponse>
-                        ) {
+                        override fun onResponse(call: Call<NewsApiResponse>, response: Response<NewsApiResponse>) {
                             continuation.resume(response.body())
                         }
 
