@@ -1,4 +1,4 @@
-package com.example.sleep
+package com.example.sleep.newsapi
 
 data class NewsApiResponse(
     val status: String,

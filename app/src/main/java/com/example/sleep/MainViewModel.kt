@@ -7,6 +7,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.sleep.db.Article
+import com.example.sleep.newsapi.NewsApiArticle
+import com.example.sleep.newsapi.NewsApiEndpoint
+import com.example.sleep.newsapi.NewsApiResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
