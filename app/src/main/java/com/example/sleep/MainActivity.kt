@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.sleep.db.Article
 import kotlin.math.max
 
-class MainActivity : AppCompatActivity(), CustomAdapter.Callback {
+class MainActivity : AppCompatActivity(), ArticleListAdapter.Callback {
 
     private lateinit var model: MainViewModel
 
@@ -39,11 +39,11 @@ class MainActivity : AppCompatActivity(), CustomAdapter.Callback {
         }
 
         recyclerView.layoutManager = gridLayoutManager
-        val customAdapter = CustomAdapter(this)
-        recyclerView.adapter = customAdapter
+        val adapter = ArticleListAdapter(this)
+        recyclerView.adapter = adapter
 
         model.getArticles().observe(this) {
-            customAdapter.setArticles(it)
+            adapter.setArticles(it)
         }
     }
 

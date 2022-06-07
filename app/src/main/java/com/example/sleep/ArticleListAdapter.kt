@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.sleep.db.Article
 
-class CustomAdapter(private val callback: Callback) : RecyclerView.Adapter<CustomAdapter.ViewHolder>() {
+class ArticleListAdapter(private val callback: Callback) : RecyclerView.Adapter<ArticleListAdapter.ViewHolder>() {
     interface Callback {
         fun onOpenArticle(article: Article)
     }
